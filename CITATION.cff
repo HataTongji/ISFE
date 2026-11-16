@@ -1,0 +1,13 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "ISFE v1.0: Informal-Settlement Flood Exposure workflow"
+version: "1.0"
+date-released: 2026-11-13
+license: MIT
+authors:
+  - family-names: "Gilbert"
+    given-names: "Katabarwa Murenzi"
+  - family-names: "Shi"
+    given-names: "Qian"
+repository-code: "https://github.com/[GITHUB-USER]/ISFE"
+doi: "10.5281/zenodo.[CODE-ID]"

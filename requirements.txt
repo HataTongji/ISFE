@@ -1,0 +1,23 @@
+# M2 pipeline — local PC (Python 3.12). numpy 2.x is required: the saved models were pickled with numpy 2.
+numpy>=2
+pandas
+scipy
+scikit-learn
+scikit-optimize
+statsmodels
+xgboost
+lightgbm
+catboost
+shap
+matplotlib
+seaborn
+tqdm
+rasterio
+geopandas
+pyproj
+shapely
+jenkspy
+earthengine-api
+requests
+jupyterlab
+torch  # PyTorch: install via conda-forge (pytorch) on Windows; import it first
