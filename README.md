@@ -1,25 +1,30 @@
-# ISFE
-ISFE v1.0: Informal-Settlement Flood Exposure workflow
-# ISFE v1.0: Informal-Settlement Flood Exposure workflow
+# ISFE v1.1: Informal-Settlement Flood Exposure workflow
 
-Code for: Katabarwa Murenzi Gilbert, Qian Shi. *An open machine-learning framework for flood-exposure assessment of informal settlements in data-scarce cities: evaluation across five East African cities.* Submitted to *Environmental Modelling & Software*.
+Code for: Katabarwa Murenzi Gilbert, Qian Shi. *Disproportionate flood exposure of informal settlements in five East African cities: city-specific drivers of flood susceptibility and implications for risk reduction.* Submitted to *Natural Hazards*.
 
 - Code (this repository): https://github.com/HataTongji/ISFE
-- Archived release: https://doi.org/10.5281/zenodo.[CODE-ID]
-- Data (samples and output rasters): https://doi.org/10.5281/zenodo.[DATA-ID]
+- Archived releases (all versions): https://doi.org/10.5281/zenodo.24289356
+- Data (inputs and outputs): https://doi.org/10.5281/zenodo.24289768
 - Licence: MIT (code); CC BY 4.0 (data)
-- Contact: hata2020@tongji.edu.cn; qianshi@tongji.edu.cn
+- Contact: qianshi@tongji.edu.cn (corresponding author)
 
 ## What it does
-`M2_Final_Reproducible_Pipeline.ipynb` runs the full workflow for Nairobi, Kampala, Dar es Salaam, Kigali and Bujumbura:
-1. Data preparation: flood and non-flood sampling (up to 2,500 points per class per city), extraction of 19 predictors, and VIF screening (VIF ≤ 10).
-2. Seven learners: RF, XGBoost, CatBoost, LightGBM, ResNet1D, TabTransformer and stacking. They are tuned with Bayesian search under 3-fold spatial-block cross-validation and evaluated on a spatial-block hold-out (20% of each class, as whole ~1.1 km blocks).
-3. Explanation: SHAP, accumulated local effects (ALE) and leave-one-covariate-out (LOCO) analysis.
-4. Uncertainty: inter-model disagreement and Monte Carlo dropout.
-5. Maps: susceptibility, 5-class (Jenks) and uncertainty GeoTIFFs, with figures.
-6. External validation against the Global Flood Database (Google Earth Engine, optional).
-7. Informal-settlement flood exposure: overlap area, chi-square test and Relative Flood Exposure Index (Cell 11).
-8. Supplementary Tables S1, S2 and A1 (Cell 12).
+`M2_Final_Reproducible_Pipeline.ipynb` runs the full workflow for Kigali, Kampala, Nairobi, Dar es Salaam and Bujumbura:
+
+| Cell | Step | Main outputs |
+|---|---|---|
+| 0–3 | Setup, city configuration, helpers, data audit | paths, predictor map, preflight checks |
+| 4 | Flood sampling (≤ 2,500 points per class), 19 predictors, VIF ≤ 10; seven learners (RF, XGBoost, CatBoost, LightGBM, ResNet1D, TabTransformer, stacking) tuned with Bayesian search under spatial-block CV and tested on a spatial-block hold-out; SHAP, ALE, LOCO; inter-model and MC-dropout uncertainty | `Tables/`, `Models/`, checkpoint |
+| 5 | Summary tables | `Tables/ALL_metrics_long.csv`, pivots |
+| 6 | Wall-to-wall maps | `TIF_Maps/<city>_FloodProbability.tif`, `_FloodSusceptibility_5class.tif`, `_Uncertainty_sigma.tif` (+ QGIS `.qml`) |
+| 7–8 | Cartographic maps and figures | `Cartographic_Maps/`, `Figures/` |
+| 9 | External validation against the Global Flood Database (Earth Engine optional; cached tiles reused) | `Tables/Table_External_Validation_GFD.csv` |
+| 10b | Slum-probability maps: 100-tree random forest on six Sentinel-2 bands (B2, B3, B4, B8, B11, B12), accuracy on held-out ~1 km blocks, 2025 and 2020 maps | `Slum_Maps/<city>_<year>_SlumProb.tif`, `Supplementary/Table_S3_…csv`, Fig. 2 |
+| 11 | Exposure: overlap of slum probability > 0.8 and very-high susceptibility, χ², φ, RFEI | `Tables/Table1_Exposure_Areas.csv`, `Table2_Chi2_RFEI.csv` |
+| 11b | Exposure and slum-accuracy figures | Fig. 4, Fig. 6a |
+| 12 | Supplementary Tables S1, S2, A1 | `Supplementary/` |
+
+The notebook is resumable: finished cities, maps and tables are skipped when it is run again. With the trained models from the data archive, **Run all** reproduces every table and figure without retraining (≈ 15–60 min on a CPU).
 
 ## Installation
 ```
@@ -28,20 +33,30 @@ conda activate isfe
 conda install -c conda-forge pytorch     # Windows: install PyTorch from conda-forge
 pip install -r requirements.txt
 ```
-Tested on Intel Core i7-8750H, 32 GB RAM, NVIDIA GTX 1050 (Windows), and on Google Colab. A CPU is sufficient.
+Tested on Windows (Intel Core i7-8750H, 32 GB RAM) and on Google Colab (CPU runtime).
 
 ## Data set-up
-Download the data archive from https://doi.org/10.5281/zenodo.[DATA-ID] and unzip it. It contains one folder per city with the sample CSV and the predictor rasters. Set `LOCAL_BASE` in Cell 0 to the unzipped folder, or the Google Drive path in Colab.
+1. Download all zip files from https://doi.org/10.5281/zenodo.24289768 and unzip them **into the same folder**. They recreate this layout:
+```
+Project III/
+├── Data/<city>/                                   predictor rasters, flood samples, flood-label rasters
+├── slum_flood_detection_East_African_city/<city>/ Sentinel-2 composites (2020, 2025) and slum reference samples
+└── M2_Final_Reproducible_Results/                 trained models, checkpoint, tables, figures, maps
+```
+2. City boundaries are **not redistributed** (GADM v4.0 licence). Download the city polygons from https://gadm.org and save them as:
+`Data/Kigali/Kigali/City.shp`, `Data/Kampala/kampala.shp/city.shp`, `Data/Nariobi/Nariobi.shp/nariobi.shp`, `Data/Dar_Salama/Dar-salama.shp/city.shp`, `Data/Bujumbura/Bujumbura.Shp/city.shp`.
+3. Set `LOCAL_BASE` in Cell 0 to the `Project III` folder (in Colab, place it at `MyDrive/Project III`).
 
 ## Running
-Run all cells in order. Results are checkpointed city by city. Outputs are written to `M2_Final_Reproducible_Results/`:
-- `Tables/`: metrics, sampling log, SHAP, ALE, LOCO, uncertainty and exposure tables
-- `Figures/`: publication figures (300 dpi)
-- `TIF_Maps/`: probability, 5-class and uncertainty GeoTIFFs, with QGIS `.qml` styles
-- `Supplementary/`: Tables S1, S2 and A1
+Run all cells in order. All outputs are written to `Project III/M2_Final_Reproducible_Results/`.
 
 ## Input data sources
-Copernicus Sentinel-1/2, SRTM (USGS), the Global Flood Database, JRC Global Surface Water and GADM v4.0, all accessed through Google Earth Engine. GADM boundaries are not redistributed; download them from https://gadm.org.
+Copernicus Sentinel-1 and Sentinel-2, SRTM (USGS), the Global Flood Database (Tellman et al. 2021), JRC Global Surface Water (Pekel et al. 2016) and GADM v4.0, accessed through Google Earth Engine.
+
+## Changes in v1.1
+- Slum-probability maps are now produced inside the notebook (Cell 10b) from the Sentinel-2 composites and reference samples, with spatial-block accuracy (Table S3).
+- Exposure statistics (Tables 1–2) computed on the 10 m slum grid; effect size φ added.
+- Robust file reading, per-city error isolation, cached external-validation tiles; Figures 2, 4 and 6a generated by the notebook.
 
 ## Citation
 See `CITATION.cff`.
