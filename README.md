@@ -1,6 +1,6 @@
 # ISFE v1.1: Informal-Settlement Flood Exposure workflow
 
-Code for: Katabarwa Murenzi Gilbert, Qian Shi. *Disproportionate flood exposure of informal settlements in five East African cities: city-specific drivers of flood susceptibility and implications for risk reduction.
+Code for: Katabarwa Murenzi Gilbert, Qian Shi. *An open machine-learning framework for flood-exposure assessment of informal settlements in data-scarce cities: evaluation across five East African cities.* Submitted to *Environmental Modelling & Software*.
 
 - Code (this repository): https://github.com/HataTongji/ISFE
 - Archived releases (all versions): https://doi.org/10.5281/zenodo.24289356
